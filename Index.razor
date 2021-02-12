@@ -1,0 +1,143 @@
+﻿@page "/"
+
+@using FundXWebBlzr
+@using FundXWebBlzr.Services
+@inject USFilingsService Values
+
+<div class="container container-fluid p-0">
+    <Jumbotron Class="px-0 py-2 my-2 bg-white">
+        <div class="my-4">
+            <h1>Dynamic Blazor Example Site</h1>
+        </div>
+
+        <p>This site is built with:</p>
+        <ul class="">
+            <li class="">.Net Core Blazor</li>
+            <li class="">&nbsp;Bootstrap</li>
+            <li class="">.Net Web API</li>
+            <li class="">&nbsp;SQL Server</li>
+        </ul>
+        <p>It implements a responsive Bootstrap design that uses a web api to bring back content dynamically.</p>
+
+        <p>Blazor was chosen as we wanted a re-usable framework to rapidly build multiple websites. Having re-usable components was very compelling coupled with the opportunity to code back to front in the same language (a programmers Nirvana), virtually eliminating the need to use javascript.</p>
+
+        <p>The reusable nature of components in Blazor has already spawned a series of open source or paid for component libraries that furhter enhances the rapid bolt together nature of Blazor. I have implemented the open source Blazorise component library with this site. Site uses a fully working modified version of Microsoft's Indentity Model to provide a login.</p>
+
+        <p>The web api was developed in VB.Net. API calls trigger SQL Stored Procedures that implement often complex data queries ranging across 80gb of data stored in multiple databases.</p>
+    </Jumbotron>
+    
+    <div class="row">
+        <div id="main" class="col-auto">
+            
+            <h3>API Call to Live SQL Database </h3>
+            <p>Choose a company, data point and relative year and data will change on the fly.</p>
+            <p>The data is standardized in the db to allow comparsions. Actual item disclosed is<br/>displayed in the returned data.</p>
+            <p>Site is not live so results may sometimes be weird as we refine processes.</p>                  
+
+            <table class="table table-bordered table-sm fx-font-sm">
+                <thead class="font-weight-bold">
+                    <tr>
+                        <th class="p-0 w-10 cell-fix">
+                            <select class="border border-0 rounded-0 font-weight-bold" @onchange="UpDateValueNewTicker">
+                                @*<option value="-1" disabled selected>(Company)</option>*@
+                                <option selected value=@startTicker>@startCoName</option>
+                                <option value="goog">Google</option>
+                            </select>
+                        </th>
+                        @*<th class="p-0 m-0">Year</th>*@
+                        <th class="p-0 w-20 cell-fix">
+                            <select class="border border-0 rounded-0 font-weight-bold" @onchange="UpDateValueNewTag">
+                                @*<option value="-1" disabled selected>(Tag)</option>*@
+                                <option selected value="Revenues">Revenues</option>
+                                <option value="Assets">Assets</option>
+                            </select>
+                        </th>
+                        <th class="p-0 w-10 cell-fix">
+                            <select class="border border-0 rounded-0 font-weight-bold" @onchange="UpDateValueNewYr">
+                                @*<option value="-1" disabled selected>(Period)</option>*@
+                                <option value="0">Latest</option>
+                                <option value="-1">Previous</option>
+                            </select>
+                        </th>
+                        <th class="p-0 w-20 text-center cell-fix">$M</th>
+                        <th class="p-0 w-30 text-center cell-fix">Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="w-10 cell-fix">@ticker.ToUpper()</td>
+                        @*<td>@currVals[0].Filing_Year</td>*@
+                        @*<td>@currVals[0].Standard_Tag</td>*@
+                        <Tooltip Text=@(currVals.Count!=0 ? currVals[0].Tag : "No Tag")>
+                            <td class="w-30 cell-fix">@(currVals.Count!=0 ? currVals[0].Tag : "No Tag")</td>
+                        </Tooltip>
+                        <td class="w-10 cell-fix">@(currVals.Count!=0 ? currVals[0].Period_Date : "")</td>
+                        <td class="w-20 text-center cell-fix">@(currVals.Count!=0 ? currVals[0].Value / 1000000 : "")</td>
+                        <td class="w-30 text-center cell-fix">Link</td>
+                    </tr>
+                </tbody>
+            </table>
+               
+        </div>
+        <div id="supp" class="col-sm" style="background-color:antiquewhite;">
+
+            <h3>How can I get Access?</h3>
+            <p class="font-italic">Card was designed to expand on the primary card</p>
+            <p class="font-italic">Will slide as display size changes</p>
+            <p>Register to setup your own unique User and Access Id.</p>
+            <p>You can then use the API directly or via Excel to pull back data on every US listed company.</p>
+            <p>See Pricing for Product Options.</p>
+
+        </div>
+        <div id="news" class="col-lg-2 mr-2" style="background-color:lemonchiffon">
+
+            <h3>Breaking</h3>
+            <p class="font-italic">Card for hot news</p>
+            <p>Consulancy now available</p>
+            <p>Bespoke and off the shelf solutions</p>
+            <p>Prices from $? an hour</p>
+        </div>
+    </div>
+    <div class="row">
+        
+    </div>
+</div>
+
+@code {
+    List<Val> currVals;
+    string startTicker, ticker, startCoName, coName, stdTag;
+    short relYr;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        currVals = new List<Val>();
+        currVals.Add(new Val());
+        startTicker = "msft";
+        ticker = startTicker;
+        startCoName = "Microsoft";
+        stdTag = "Revenues";
+        //relYr = 0;
+        currVals = await Values.GetValsAsync(startTicker, "Revenues", 0);
+
+    }
+    async Task UpDateValueNewTicker(ChangeEventArgs e)
+    {
+        ticker = e.Value.ToString();
+        currVals = await Values.GetValsAsync(ticker, stdTag, relYr);
+    }
+    async Task UpDateValueNewTag(ChangeEventArgs e)
+    {
+        stdTag = e.Value.ToString();
+        currVals = await Values.GetValsAsync(ticker, stdTag, relYr);
+    }
+    async Task UpDateValueNewYr(ChangeEventArgs e)
+    {
+        relYr = Convert.ToInt16(e.Value);
+        currVals = await Values.GetValsAsync(ticker, stdTag, relYr);
+    }
+}
+
+
+
