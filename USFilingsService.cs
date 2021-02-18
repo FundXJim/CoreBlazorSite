@@ -22,7 +22,7 @@ namespace FundXWebBlzr.Services
 
         public async Task<List<Val>> GetValsAsync(string tkr, string tag, short rYr)
         {
-            var response = await _httpClient.GetAsync($"api/v1/us/std/items/{tag}/fiscal/yr/{rYr}/{tkr}?tkn=52");
+            var response = await _httpClient.GetAsync($"api/v1/us/std/items/{tag}/fiscal/yr/{rYr}/{tkr}?tkn=0");
             response.EnsureSuccessStatusCode();
 
             using var responseContent = await response.Content.ReadAsStreamAsync();
